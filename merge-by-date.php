@@ -1,59 +1,45 @@
 <?php
-$file1 = $argv[1];
-$file2 = $argv[2];
-$start = '/^Session Start \((.*)\): (.*)$/';
-$handle1 = fopen($file1, "r");
-$handle2 = fopen($file2, "r");
-while (($line = fgets($handle1)) !== false) {
-	$line = remove_utf8_bom($line);
+$active = [];
+$inactive = [];
+$active["file"] = fopen($argv[1], "r");
+$inactive["file"] = fopen($argv[2], "r");
 
-	preg_match($start, $line, $matches);
-	if ($matches) {
-		$begin = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
-		$file1_begin = $begin;
-		break;
+find_next_start($active);
+find_next_start($inactive);
+
+if ($active["start"] > $inactive["start"])
+	swap($active, $inactive);
+
+while (!feof($active["file"]) && !feof($inactive["file"])) {
+	echo $active["line"];
+	while ($active["end"] < $inactive["start"]) {
+		stream_until_close($active);
 	}
+	swap($active, $inactive);
 }
 
-while (($line = fgets($handle2)) !== false) {
-	$line = remove_utf8_bom($line);
-
-	preg_match($start, $line, $matches);
-	if ($matches) {
-		$begin = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
-		$file2_begin = $begin;
-		break;
-	}
-}
-
-if ($file1_begin > $file2_begin) {
-	$tmp = $handle1;
-	$handle1 = $handle2;
-	$handle2 = $tmp;
-}
-
-while ($file1_begin < $file2_begin)
-	$block_end = stream_until_close_and_return_end_time($handle1);
-
-/*
-	preg_match($close, $line, $matches);
-	if ($matches) {
-		$end = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
-		if ($begin < $end)
-			echo "good\n";
-	}
-}
- */
-fclose($handle1);
-fclose($handle2);
-
-function stream_until_close_and_return_end_time($handle) {
+function stream_until_close(&$handle) {
 	$close = '/^Session Close \((.*)\): (.*)$/';
-	while ($line = remove_utf8_bom(fgets($handle))) {
+	while ($line = remove_utf8_bom(fgets($handle["file"]))) {
 		preg_match($close, $line, $matches);
 		echo $line;
-		if ($matches)
-			return DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
+		if ($matches) {
+			$handle["end"] = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
+			return TRUE;
+		}
+	}
+}
+
+function find_next_start(&$handle) {
+	$start = '/^Session Start \((.*)\): (.*)$/';
+	while ($line = remove_utf8_bom(fgets($handle["file"]))) {
+		preg_match($start, $line, $matches);
+		if ($matches) {
+			$handle["end"] = date("r", 0);
+			$handle["start"] = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
+			$handle["line"] = $line;
+			return TRUE;
+		}
 	}
 }
 
@@ -61,5 +47,12 @@ function remove_utf8_bom($text) {
 	$bom = pack('H*','EFBBBF');
 	$text = preg_replace("/^$bom/", '', $text);
 	return $text;
+}
+
+function swap(&$x, &$y) {
+	$tmp = $x;
+	$x = $y;
+	$y = $tmp;
+	echo "swapped!\n";
 }
 ?>
