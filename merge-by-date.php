@@ -4,36 +4,52 @@ $inactive = [];
 $active["file"] = fopen($argv[1], "r");
 $inactive["file"] = fopen($argv[2], "r");
 
-find_next_start($active);
-find_next_start($inactive);
+if (pathinfo($argv[1], PATHINFO_EXTENSION) === "log" && pathinfo($argv[2], PATHINFO_EXTENSION) === "log") {
+	$filetype = "LOG";
+	$timeformat = "D M d H:i:s Y";
+	$reg_start = '/^Session Start \((.*)\): (.*)$/';
+	$reg_close = '/^Session Close \((.*)\): (.*)$/';
+}
+
+if (pathinfo($argv[1], PATHINFO_EXTENSION) === "xml" && pathinfo($argv[2], PATHINFO_EXTENSION) === "xml") {
+	$filetype = "XML";
+	$timeformat = "U";
+	$reg_start = '/^\<session type\="([Ss]tart)" time\="(\d+)".*\/\>$/';
+	$reg_close = '/^\<session type\="([Ss]top)" time\="(\d+)".*\/\>$/';
+}
+
+find_next_start($active, $reg_start);
+find_next_start($inactive, $reg_start);
 
 while (!feof($active["file"]) || !feof($inactive["file"])) {
 	if ($active["start"] > $inactive["start"])
 		swap($active, $inactive);
-	stream_until_close($active);
-	find_next_start($active);
-	echo "\n\n";
+	stream_until_close($active, $reg_close);
+	find_next_start($active, $reg_start);
+	if ($filetype === "LOG")
+		echo "\n\n";
 }
 
-function stream_until_close(&$handle) {
-	$close = '/^Session Close \((.*)\): (.*)$/';
+function stream_until_close(&$handle, $reg) {
 	echo $handle["line"];
 	while ($line = fgets($handle["file"])) {
 		$line = remove_utf8_bom($line);
-		preg_match($close, $line, $matches);
+		preg_match($reg, $line, $matches);
 		echo $line;
 		if ($matches)
 			return TRUE;
 	}
 }
 
-function find_next_start(&$handle) {
-	$start = '/^Session Start \((.*)\): (.*)$/';
+function find_next_start(&$handle, $reg) {
+	global $timeformat;
 	while ($line = fgets($handle["file"])) {
 		$line = remove_utf8_bom($line);
-		preg_match($start, $line, $matches);
+		preg_match($reg, $line, $matches);
 		if ($matches) {
-			$handle["start"] = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
+			$handle["start"] = DateTime::createFromFormat($timeformat, trim($matches[2]));
+			echo "match!";
+			echo $handle["start"]->format('Y-m-d');
 			$handle["line"] = $line;
 			return TRUE;
 		}
