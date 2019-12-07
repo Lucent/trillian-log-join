@@ -4,20 +4,16 @@ $inactive = [];
 $active["file"] = fopen($argv[1], "r");
 $inactive["file"] = fopen($argv[2], "r");
 
-find_next_start($active);
-find_next_start($inactive);
-
-while (!feof($active["file"]) && !feof($inactive["file"])) {
+while (!feof($active["file"]) || !feof($inactive["file"])) {
+	find_next_start($active);
 	if ($active["start"] > $inactive["start"])
 		swap($active, $inactive);
-	echo $active["line"];
-	while ($active["end"] < $inactive["start"]) {
-		stream_until_close($active);
-	}
+	stream_until_close($active);
 }
 
 function stream_until_close(&$handle) {
 	$close = '/^Session Close \((.*)\): (.*)$/';
+	echo $handle["line"];
 	while ($line = remove_utf8_bom(fgets($handle["file"]))) {
 		preg_match($close, $line, $matches);
 		echo $line;
@@ -33,7 +29,7 @@ function find_next_start(&$handle) {
 	while ($line = remove_utf8_bom(fgets($handle["file"]))) {
 		preg_match($start, $line, $matches);
 		if ($matches) {
-			$handle["end"] = date("r", 0);
+			$handle["end"] = 0;
 			$handle["start"] = DateTime::createFromFormat('D M d H:i:s Y', trim($matches[2]));
 			$handle["line"] = $line;
 			return TRUE;
@@ -48,6 +44,7 @@ function remove_utf8_bom($text) {
 }
 
 function swap(&$x, &$y) {
+	echo "\n";
 	$tmp = $x;
 	$x = $y;
 	$y = $tmp;
