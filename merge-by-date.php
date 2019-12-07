@@ -7,15 +7,13 @@ $inactive["file"] = fopen($argv[2], "r");
 find_next_start($active);
 find_next_start($inactive);
 
-if ($active["start"] > $inactive["start"])
-	swap($active, $inactive);
-
 while (!feof($active["file"]) && !feof($inactive["file"])) {
+	if ($active["start"] > $inactive["start"])
+		swap($active, $inactive);
 	echo $active["line"];
 	while ($active["end"] < $inactive["start"]) {
 		stream_until_close($active);
 	}
-	swap($active, $inactive);
 }
 
 function stream_until_close(&$handle) {
@@ -53,6 +51,5 @@ function swap(&$x, &$y) {
 	$tmp = $x;
 	$x = $y;
 	$y = $tmp;
-	echo "swapped!\n";
 }
 ?>
