@@ -14,8 +14,8 @@ if (pathinfo($argv[1], PATHINFO_EXTENSION) === "log" && pathinfo($argv[2], PATHI
 if (pathinfo($argv[1], PATHINFO_EXTENSION) === "xml" && pathinfo($argv[2], PATHINFO_EXTENSION) === "xml") {
 	$filetype = "XML";
 	$timeformat = "U";
-	$reg_start = '/^\<session type\="([Ss]tart)" time\="(\d+)".*\/\>$/';
-	$reg_close = '/^\<session type\="([Ss]top)" time\="(\d+)".*\/\>$/';
+	$reg_start = '/^\<session type="([Ss]tart)" time="(\d+)".*\/\>$/';
+	$reg_close = '/^\<session type="([Ss]top)" time="(\d+)".*\/\>$/';
 }
 
 find_next_start($active, $reg_start);
@@ -31,11 +31,11 @@ while (!feof($active["file"]) || !feof($inactive["file"])) {
 }
 
 function stream_until_close(&$handle, $reg) {
-	echo $handle["line"];
+	echo $handle["line"], "\n";
 	while ($line = fgets($handle["file"])) {
-		$line = remove_utf8_bom($line);
+		$line = trim(remove_utf8_bom($line));
 		preg_match($reg, $line, $matches);
-		echo $line;
+		echo $line, "\n";
 		if ($matches)
 			return TRUE;
 	}
@@ -44,12 +44,11 @@ function stream_until_close(&$handle, $reg) {
 function find_next_start(&$handle, $reg) {
 	global $timeformat;
 	while ($line = fgets($handle["file"])) {
-		$line = remove_utf8_bom($line);
+		$line = trim(remove_utf8_bom($line));
 		preg_match($reg, $line, $matches);
 		if ($matches) {
 			$handle["start"] = DateTime::createFromFormat($timeformat, trim($matches[2]));
-			echo "match!";
-			echo $handle["start"]->format('Y-m-d');
+//			echo $handle["start"]->format('Y-m-d');
 			$handle["line"] = $line;
 			return TRUE;
 		}
