@@ -4,7 +4,7 @@ $xml_file = $argv[1];
 $log_file = $argv[2];
 
 if (pathinfo($xml_file, PATHINFO_EXTENSION) !== "xml" || pathinfo($log_file, PATHINFO_EXTENSION) !== "log") {
-  echo "WRONG ARGUMENT ORDER!\n";
+  fwrite(STDERR, "WRONG ARGUMENT ORDER!\n");
   exit;
 }
 

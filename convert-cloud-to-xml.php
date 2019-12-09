@@ -1,4 +1,5 @@
 <?php
+// Converts the URL encoded files concatenated from _CLOUD for comparison to XML export provided by Trillian staff.
 $handle = fopen($argv[1], "r");
 $from = "lucent";
 $to = explode("-", pathinfo($argv[1], PATHINFO_FILENAME), 2)[1];
@@ -10,7 +11,7 @@ while ($line = fgets($handle)) {
   if (!preg_match('/\<message /', $line))
     continue;
   elseif (!$matches) {
-    echo "CAN'T FIND MESSAGE: $line\n";
+    fwrite(STDERR, "CAN'T FIND MESSAGE: $line\n");
     exit;
   }
 
@@ -20,7 +21,7 @@ while ($line = fgets($handle)) {
   elseif ($matches[2] == "incoming")
     $user = $to;
   else
-    echo "CAN'T DETERMINE TO/FROM: $line\n";
+    fwrite(STDERR, "CAN'T DETERMINE TO/FROM: $line\n");
 
   echo "<message timestamp='{$matches[1]}' from='$user'>$message</message>\n";
 }

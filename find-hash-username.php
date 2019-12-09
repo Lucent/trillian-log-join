@@ -8,7 +8,7 @@ foreach ($all_files as $hash) {
   $new_filename = get_new_filename($hash_fullpath, $search_dir);
   if ($new_filename !== FALSE) {
     if (file_exists($new_filename))
-      echo "# OVERWRITE WARNING: $new_filename\n";
+      fwrite(STDERR, "# OVERWRITE WARNING: $new_filename\n");
     else
       echo "mv -n '$hash_fullpath' '$new_filename'\n";
   }
@@ -19,13 +19,13 @@ function get_new_filename($hash, $search_dir) {
   $message = get_long_line($hash, $reg_message);
 //  echo "# ", $message, "\n";
   if (strlen($message) === 0) {
-    echo "# $hash : no lines long enough\n";
+    fwrite(STDERR, "# $hash : no lines long enough\n");
     return FALSE;
   }
   $match = `grep -Fr "$message" $search_dir`;
   $match_count = substr_count($match, "\n");
   if ($match_count !== 1) {
-    echo "# $hash : bad number of matches: $match_count\n";
+    fwrite(STDERR, "# $hash : bad number of matches: $match_count\n)";
     return FALSE;
   }
   $split = explode(":", $match, 2);
