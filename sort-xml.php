@@ -1,4 +1,6 @@
 <?php
+// Sort XML logs by time and millisecond attributes
+
 $file = fopen($argv[1], "r");
 $reg_ms = '/^\<.* time="(\d+)" ms="(\d+)".*\/\>$/';
 $reg = '/^\<.* time="(\d+)" .*\/\>$/';
@@ -6,7 +8,7 @@ $reg = '/^\<.* time="(\d+)" .*\/\>$/';
 $all_lines = [];
 while ($line = fgets($file)) {
   $line = trim(remove_utf8_bom($line));
-  if (preg_match('/\>/', $line)) {
+  if (preg_match('/\>\</', $line)) {
     fwrite(STDERR, "DOUBLE LINE: $line\n");
   //  exit;
   }

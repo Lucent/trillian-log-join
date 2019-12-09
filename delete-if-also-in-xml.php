@@ -1,5 +1,6 @@
 <?php
 // Fuzz the times and see if .log files next to .xml have any extra messages not in .xml
+
 $xml_file = $argv[1];
 $log_file = $argv[2];
 

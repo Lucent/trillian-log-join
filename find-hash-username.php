@@ -1,4 +1,6 @@
 <?php
+// Use existing log message contents to find real filenames of staff-provided hashed filenames
+
 $hash_dir = $argv[1];
 $search_dir = $argv[2];
 

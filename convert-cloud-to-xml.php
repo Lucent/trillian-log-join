@@ -1,5 +1,6 @@
 <?php
-// Converts the URL encoded files concatenated from _CLOUD for comparison to XML export provided by Trillian staff.
+// Converts the URL encoded files concatenated byflatten-cloud.php from _CLOUD for comparison to XML export provided by Trillian staff.
+
 $handle = fopen($argv[1], "r");
 $from = "lucent";
 $to = explode("-", pathinfo($argv[1], PATHINFO_FILENAME), 2)[1];

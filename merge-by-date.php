@@ -1,4 +1,6 @@
 <?php
+// Use session start and stop times in .log or .xml files to merge them
+
 $active = [];
 $inactive = [];
 $active["file"] = fopen($argv[1], "r");

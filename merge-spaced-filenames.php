@@ -1,4 +1,6 @@
 <?php
+// Find same users but in multiple files due to spacing differences and issue commands to merge them
+
 $search_dir = $argv[1];
 $uniform_names = [];
 
