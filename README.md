@@ -6,3 +6,6 @@ grep -m1 -v "<log version" *.log
 
 # get rid of duplicate lines to minimize diffs
 awk '!seen[$0]++' icq-714253580.log > icq-714253580dupes.log
+
+# remove \r\r\n in some XML
+sed ':a;N;$!ba;s/\r\r\n//g' file > file-new
